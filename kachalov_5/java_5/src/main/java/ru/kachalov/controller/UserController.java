@@ -19,19 +19,24 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<UserEntity> getUserById(@RequestParam int id) {
-        UserEntity user = userService.getUser(id);
+    public ResponseEntity<UserEntity> getUserById(
+            @RequestParam(required = false) Integer optionalId,
+            @RequestBody(required = false) UserRequest requestBody) {
 
-        return ResponseEntity.ok(user);
+        boolean hasId = optionalId != null;
+        boolean hasRequestBody = requestBody != null;
+
+        if (!hasId && !hasRequestBody) {
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        int finalUserId = hasId ? optionalId : requestBody.getId();
+        UserEntity userEntity = userService.getUser(finalUserId);
+
+        return ResponseEntity.ok(userEntity);
     }
 
-    @PostMapping("/get")
-    public ResponseEntity<UserEntity> getUserByJson(@RequestBody UserRequest userRequest) {
-        UserEntity user = userService.getUser(userRequest.getId());
-        return ResponseEntity.ok(user);
-    }
-
-    @PostMapping("/add")
+    @PostMapping
     public ResponseEntity<UserEntity> addUser(@RequestBody UserRequest userRequest) {
         UserEntity user = userService.addUser(userRequest);
         return ResponseEntity.ok(user);
